@@ -2,14 +2,17 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use App\Repository\PostRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\PostRepository;
+use App\Controller\PostCountController;
+use App\Controller\PostPublishController;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Validator\Constraints\Valid;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\Valid;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[
@@ -21,14 +24,68 @@ use Symfony\Component\Validator\Constraints\Valid;
         paginationClientItemsPerPage: false,
         collectionOperations: [
             'get',
-            'post' 
+            'post',
+            'countPost' => [
+                'method' => 'GET',
+                'path' => '/posts/count',
+                'controller' => PostCountController::class,
+                'read' => false,
+                'filters' =>  [],
+                'pagination_enabled' => false,
+                'openapi_context' => [
+                    'summary' => "Permet de compter les articles",
+                    'parameters' => [
+                        ['in' => 'query',
+                        'name' => 'online',
+                        'schema' => [
+                            'type' => 'integer',
+                            'maximum' => 1,
+                            'minimum' => 0
+                            ],
+                        'description' => 'Filtre les articles en ligne'
+                        ]
+                    ],
+                    'responses' => [
+                        '200' => [
+                            'description' => 'Nombre de post',
+                            'content' => [
+                                'application/json' => [
+                                    'schema' => [
+                                        'type' => 'integer',
+                                        'example' => 3
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ] 
+            ] 
         ],
         itemOperations: [
             'put',
             'delete',
             'get' => [
             'normalization_context' => ['groups' => ['read:collection', 'read:item', 'read:post']]
-        ]]
+            ],
+            'publish' => [
+                'method' => 'POST',
+                'path' => '/posts/{id}/publish',
+                'controller' => PostPublishController::class,
+                'openapi_context' => [
+                    'summary' => "Permet de public un article",
+                    'requestBody' => [
+                        'content' => [
+                            'application/json' => [
+                                'schema' => [
+                                    'type' => 'object'
+                                ]
+                            ]
+                        ]
+                    ]
+                ] 
+            ]
+
+        ]
     ),
     ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'title' => 'partial'])
 ]
@@ -69,6 +126,11 @@ class Post
         Valid()
     ]
     private $category;
+
+    #[ORM\Column(type: 'boolean', options:['default' => 0])]
+    #[Groups(['read:collection'])]
+    #[ApiProperty(openapiContext: ['type' => 'boolean', 'description' => 'Article publié et accessible par tout'])]
+    private $online = false;
 
     public function __construct()
     {
@@ -153,6 +215,18 @@ class Post
     public function setCategory(?Category $category): self
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function getOnline(): ?bool
+    {
+        return $this->online;
+    }
+
+    public function setOnline(bool $online): self
+    {
+        $this->online = $online;
 
         return $this;
     }
