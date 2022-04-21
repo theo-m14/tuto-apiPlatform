@@ -83,7 +83,8 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
                         ]
                     ]
                 ] 
-            ]
+            ],
+            'patch'
 
         ]
     ),
