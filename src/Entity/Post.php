@@ -2,7 +2,9 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use App\Repository\PostRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -10,22 +12,26 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\Valid;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
-#[ApiResource(
-    normalizationContext: ['groups' =>  ['read:collection']],
-    denormalizationContext: ['groups' => ['write:Post']],
-    paginationItemsPerPage: 2,
-    paginationMaximumItemsPerPage: 2,
-    collectionOperations: [
-        'get',
-        'post' 
-    ],
-    itemOperations: [
-        'put',
-        'delete',
-        'get' => [
-        'normalization_context' => ['groups' => ['read:collection', 'read:item', 'read:post']]
-    ]]
-)]
+#[
+    ApiResource(
+        normalizationContext: ['groups' =>  ['read:collection']],
+        denormalizationContext: ['groups' => ['write:Post']],
+        paginationItemsPerPage: 2,
+        paginationMaximumItemsPerPage: 2,
+        paginationClientItemsPerPage: false,
+        collectionOperations: [
+            'get',
+            'post' 
+        ],
+        itemOperations: [
+            'put',
+            'delete',
+            'get' => [
+            'normalization_context' => ['groups' => ['read:collection', 'read:item', 'read:post']]
+        ]]
+    ),
+    ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'title' => 'partial'])
+]
 class Post
 {
     #[ORM\Id]
