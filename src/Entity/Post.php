@@ -19,8 +19,6 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
     ApiResource(
         normalizationContext: ['groups' =>  ['read:collection']],
         denormalizationContext: ['groups' => ['write:Post']],
-        paginationItemsPerPage: 2,
-        paginationMaximumItemsPerPage: 2,
         paginationClientItemsPerPage: false,
         collectionOperations: [
             'get',
@@ -133,6 +131,9 @@ class Post
     #[ApiProperty(openapiContext: ['type' => 'boolean', 'description' => 'Article publié et accessible par tout'])]
     private $online = false;
 
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
+    private $user;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -228,6 +229,18 @@ class Post
     public function setOnline(bool $online): self
     {
         $this->online = $online;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
 
         return $this;
     }
