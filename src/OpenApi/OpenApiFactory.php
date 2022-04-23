@@ -17,6 +17,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
 
     public function __invoke(array $context = []): OpenApi
     {
+        //Caché les routes
         $openApi = $this->decorated->__invoke($context);
         foreach($openApi->getPaths()->getPaths() as $key => $path){
             if($path->getGet() && $path->getGet()->getSummary() === 'hidden'){
@@ -24,6 +25,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
             }
         }
 
+        //Création de schéma de sécurité
         $schemas = $openApi->getComponents()->getSecuritySchemes();
         // $schemas['cookieAuth'] = new \ArrayObject([
         //     'type' => 'apiKey',
@@ -36,6 +38,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
             'bearerFormat' => 'JWT'
         ]);
 
+        //Création de schéma de réponses et de requetes
         $schemas = $openApi->getComponents()->getSchemas();
         $schemas['Credentials'] = new \ArrayObject([
             'type' => 'object',
@@ -60,6 +63,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
             ]
         ]);
 
+        //Ajout de chemin sur la doc
         $pathItem = new PathItem(
             post: new Operation(
                 operationId: 'postApiLogin',

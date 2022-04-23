@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\User\JWTUserInterface;
+use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -68,13 +69,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
         $this->posts = new ArrayCollection();
     }
 
+    public function __toString()
+    {
+        return $this->id;
+    }
 
-
-    public static function createFromPayload($id, array $payload)
+    public static function createFromPayload($id, array $payload) : JWTUserInterface
     {
         return (new User())->setId($id)->setEmail($payload['email'] ?? null);
     }
-    
 
     public function getId(): ?int
     {

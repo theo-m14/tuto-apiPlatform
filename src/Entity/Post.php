@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\UserOwnedInterface;
 use App\Repository\PostRepository;
 use App\Controller\PostCountController;
 use App\Controller\PostPublishController;
@@ -88,7 +89,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
     ),
     ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'title' => 'partial'])
 ]
-class Post
+class Post implements UserOwnedInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
